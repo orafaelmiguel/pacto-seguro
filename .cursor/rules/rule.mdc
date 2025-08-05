@@ -1,0 +1,445 @@
+---
+alwaysApply: true
+---
+
+## @project
+- **Nome do Projeto:** Pacto Seguro
+- **Missão:** Evoluir a assinatura digital de um simples "ato de assinar" para uma "prova de entendimento". Somos uma plataforma SaaS que permite a criação de termos de consentimento interativos, garantindo que os signatários compreendam o que estão assinando.
+- **Diferencial:** Foco em módulos de compreensão (quizzes, inicialização de cláusulas), versionamento de termos ("Termo Vivo") e trilhas de auditoria robustas que registram a interação do usuário com o documento.
+
+## @stack
+A stack tecnológica foi escolhida para máxima produtividade, escalabilidade e simplicidade.
+
+**AVISO IMPORTANTE:** Nós substituímos a stack anterior de PostgreSQL/Prisma/Passport.js pela stack integrada da **Supabase**. TODA a lógica de autenticação, banco de dados e armazenamento de arquivos DEVE utilizar a Supabase.
+
+- **Framework Frontend:** Next.js 14+ (usando **App Router** exclusivamente).
+- **Linguagem:** TypeScript.
+- **Backend-as-a-Service (BaaS):**
+    - **Autenticação:** Supabase Auth (Login com e-mail/senha, logins sociais, etc.).
+    - **Banco de Dados:** Supabase Database (Postgres). A interação com o DB deve ser feita via `@supabase/supabase-js`.
+    - **Armazenamento:** Supabase Storage (para guardar os PDFs assinados e assinaturas).
+- **Estilização:**
+    - **Tailwind CSS v3.4:** Esta é a única versão autorizada. Não use classes ou funcionalidades de versões posteriores. A configuração em `tailwind.config.js` é a fonte da verdade.
+    - **Componentes UI:** `shadcn/ui`. Usado como base para nossos componentes, customizados para a identidade visual do Pacto Seguro.
+- **Envio de E-mails Transacionais:** Resend.
+- **Deployment:** Vercel.
+
+## @structure
+O projeto segue uma estrutura simplificada dentro de um único diretório de aplicação Next.js, aproveitando ao máximo o App Router e as capacidades server-side do framework.
+
+Excelente. Adoção de Cursor como ferramenta e a mudança para Supabase são decisões que otimizam drasticamente a velocidade e a simplicidade do desenvolvimento, perfeitas para um micro-SaaS.
+
+Aqui está um arquivo .cursor-rules completo e detalhado para o projeto Pacto Seguro, incorporando todas as suas especificações. Você pode salvar este conteúdo em um arquivo chamado .cursor-rules na raiz do seu projeto.
+
+# .cursor-rules for Pacto Seguro
+
+## @project
+- **Nome do Projeto:** Pacto Seguro
+- **Missão:** Evoluir a assinatura digital de um simples "ato de assinar" para uma "prova de entendimento". Somos uma plataforma SaaS que permite a criação de termos de consentimento interativos, garantindo que os signatários compreendam o que estão assinando.
+- **Diferencial:** Foco em módulos de compreensão (quizzes, inicialização de cláusulas), versionamento de termos ("Termo Vivo") e trilhas de auditoria robustas que registram a interação do usuário com o documento.
+
+## @stack
+A stack tecnológica foi escolhida para máxima produtividade, escalabilidade e simplicidade.
+
+**AVISO IMPORTANTE:** Nós substituímos a stack anterior de PostgreSQL/Prisma/Passport.js pela stack integrada da **Supabase**. TODA a lógica de autenticação, banco de dados e armazenamento de arquivos DEVE utilizar a Supabase.
+
+- **Framework Frontend:** Next.js 14+ (usando **App Router** exclusivamente).
+- **Linguagem:** TypeScript.
+- **Backend-as-a-Service (BaaS):**
+    - **Autenticação:** Supabase Auth (Login com e-mail/senha, logins sociais, etc.).
+    - **Banco de Dados:** Supabase Database (Postgres). A interação com o DB deve ser feita via `@supabase/supabase-js`.
+    - **Armazenamento:** Supabase Storage (para guardar os PDFs assinados e assinaturas).
+- **Estilização:**
+    - **Tailwind CSS v3.4:** Esta é a única versão autorizada. Não use classes ou funcionalidades de versões posteriores. A configuração em `tailwind.config.js` é a fonte da verdade.
+    - **Componentes UI:** `shadcn/ui`. Usado como base para nossos componentes, customizados para a identidade visual do Pacto Seguro.
+- **Envio de E-mails Transacionais:** Resend.
+- **Deployment:** Vercel.
+
+## @structure
+O projeto segue uma estrutura simplificada dentro de um único diretório de aplicação Next.js, aproveitando ao máximo o App Router e as capacidades server-side do framework.
+
+/pacto-seguro/
+├── app/                      # Diretório principal do App Router
+│   ├── (auth)/               # Grupo de rotas para autenticação (não afeta a URL)
+│   │   ├── login/
+│   │   └── callback/         # Callback para logins sociais da Supabase
+│   ├── (dashboard)/          # Grupo de rotas protegidas
+│   │   ├── documents/
+│   │   │   ├── [id]/         # Página do editor de um documento específico
+│   │   │   └── page.tsx      # Lista de documentos
+│   │   ├── settings/
+│   │   └── layout.tsx        # Layout do dashboard que verifica a sessão do usuário
+│   ├── api/                  # API Routes (para webhooks, etc.)
+│   │   └── payments/
+│   │       └── webhook/
+│   ├── sign/                 # Página pública de assinatura
+│   │   └── [token]/
+│   └── layout.tsx            # Layout raiz
+│   └── page.tsx              # Landing Page pública
+├── components/
+│   ├── ui/                   # Componentes base vindos do shadcn/ui (Button, Input, etc.)
+│   └── specific/             # Componentes complexos e específicos da aplicação
+│       ├── DocumentEditor.tsx
+│       ├── PricingTiers.tsx
+│       └── UserNav.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts         # Cliente Supabase para o lado do cliente (browser)
+│   │   └── server.ts         # Cliente Supabase para o lado do servidor (Server Components, Route Handlers)
+│   ├── utils.ts              # Funções utilitárias gerais
+│   └── types.ts              # Definições de tipos globais
+├── public/                   # Arquivos estáticos
+├── styles/
+│   └── globals.css           # Estilos globais e diretivas do Tailwind
+├── .cursor-rules             # ESTE ARQUIVO
+├── tailwind.config.js        # Configuração do Tailwind (v3.4)
+└── tsconfig.json
+
+Excelente. Adoção de Cursor como ferramenta e a mudança para Supabase são decisões que otimizam drasticamente a velocidade e a simplicidade do desenvolvimento, perfeitas para um micro-SaaS.
+
+Aqui está um arquivo .cursor-rules completo e detalhado para o projeto Pacto Seguro, incorporando todas as suas especificações. Você pode salvar este conteúdo em um arquivo chamado .cursor-rules na raiz do seu projeto.
+
+# .cursor-rules for Pacto Seguro
+
+## @project
+- **Nome do Projeto:** Pacto Seguro
+- **Missão:** Evoluir a assinatura digital de um simples "ato de assinar" para uma "prova de entendimento". Somos uma plataforma SaaS que permite a criação de termos de consentimento interativos, garantindo que os signatários compreendam o que estão assinando.
+- **Diferencial:** Foco em módulos de compreensão (quizzes, inicialização de cláusulas), versionamento de termos ("Termo Vivo") e trilhas de auditoria robustas que registram a interação do usuário com o documento.
+
+## @stack
+A stack tecnológica foi escolhida para máxima produtividade, escalabilidade e simplicidade.
+
+**AVISO IMPORTANTE:** Nós substituímos a stack anterior de PostgreSQL/Prisma/Passport.js pela stack integrada da **Supabase**. TODA a lógica de autenticação, banco de dados e armazenamento de arquivos DEVE utilizar a Supabase.
+
+- **Framework Frontend:** Next.js 14+ (usando **App Router** exclusivamente).
+- **Linguagem:** TypeScript.
+- **Backend-as-a-Service (BaaS):**
+    - **Autenticação:** Supabase Auth (Login com e-mail/senha, logins sociais, etc.).
+    - **Banco de Dados:** Supabase Database (Postgres). A interação com o DB deve ser feita via `@supabase/supabase-js`.
+    - **Armazenamento:** Supabase Storage (para guardar os PDFs assinados e assinaturas).
+- **Estilização:**
+    - **Tailwind CSS v3.4:** Esta é a única versão autorizada. Não use classes ou funcionalidades de versões posteriores. A configuração em `tailwind.config.js` é a fonte da verdade.
+    - **Componentes UI:** `shadcn/ui`. Usado como base para nossos componentes, customizados para a identidade visual do Pacto Seguro.
+- **Envio de E-mails Transacionais:** Resend.
+- **Deployment:** Vercel.
+
+## @structure
+O projeto segue uma estrutura simplificada dentro de um único diretório de aplicação Next.js, aproveitando ao máximo o App Router e as capacidades server-side do framework.
+
+/pacto-seguro/
+├── app/                      # Diretório principal do App Router
+│   ├── (auth)/               # Grupo de rotas para autenticação (não afeta a URL)
+│   │   ├── login/
+│   │   └── callback/         # Callback para logins sociais da Supabase
+│   ├── (dashboard)/          # Grupo de rotas protegidas
+│   │   ├── documents/
+│   │   │   ├── [id]/         # Página do editor de um documento específico
+│   │   │   └── page.tsx      # Lista de documentos
+│   │   ├── settings/
+│   │   └── layout.tsx        # Layout do dashboard que verifica a sessão do usuário
+│   ├── api/                  # API Routes (para webhooks, etc.)
+│   │   └── payments/
+│   │       └── webhook/
+│   ├── sign/                 # Página pública de assinatura
+│   │   └── [token]/
+│   └── layout.tsx            # Layout raiz
+│   └── page.tsx              # Landing Page pública
+├── components/
+│   ├── ui/                   # Componentes base vindos do shadcn/ui (Button, Input, etc.)
+│   └── specific/             # Componentes complexos e específicos da aplicação
+│       ├── DocumentEditor.tsx
+│       ├── PricingTiers.tsx
+│       └── UserNav.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts         # Cliente Supabase para o lado do cliente (browser)
+│   │   └── server.ts         # Cliente Supabase para o lado do servidor (Server Components, Route Handlers)
+│   ├── utils.ts              # Funções utilitárias gerais
+│   └── types.ts              # Definições de tipos globais
+├── public/                   # Arquivos estáticos
+├── styles/
+│   └── globals.css           # Estilos globais e diretivas do Tailwind
+├── .cursor-rules             # ESTE ARQUIVO
+├── tailwind.config.js        # Configuração do Tailwind (v3.4)
+└── tsconfig.json
+
+
+## @rules
+Estas são as regras fundamentais que o Cursor AI deve seguir ao gerar ou editar código para este projeto.
+
+NÃO PEÇA NENHUMA CONFIRMAÇÃO, APENAS CRIE A TO-DO E PROSSIGA AUTOMATICAMENTE, NÃO PARE NO MEIO DAS FEATURES, NÃO FAÇA EU PEDIR DE NOVO OU PEDIR PARA CONTINUAR NO MEIO DE UMA FEATURE
+
+1.  **Metodologia "To-Do List" é Mandatória:**
+    - TODA nova feature, componente ou modificação solicitada por prompt DEVE ser primeiramente quebrada em uma lista de tarefas (to-do list) com checkboxes.
+    - Exemplo de interação:
+      - **Usuário:** "Crie a página de configurações do perfil."
+      - **Cursor AI:** "Entendido. Para criar a página de configurações do perfil, seguirei estes passos:
+        `[ ]` Criar a estrutura da rota em `app/(dashboard)/settings/page.tsx`.
+        `[ ]` Buscar os dados do usuário logado usando o cliente Supabase do lado do servidor.
+        `[ ]` Criar um formulário para atualizar o nome e o avatar do usuário.
+        `[ ]` Implementar a lógica de `Server Action` para receber os dados do formulário.
+        `[ ]` Chamar a função `supabase.auth.updateUser()` com os novos dados.
+        `[ ]` Adicionar uma notificação (toast) de sucesso ou erro.
+
+2.  **Supabase é a ÚNICA Fonte da Verdade para Dados e Auth:**
+    - Use o cliente JavaScript `@supabase/supabase-js`. Importe a instância correta de `/lib/supabase/client.ts` (para componentes de cliente) ou `/lib/supabase/server.ts` (para componentes de servidor e API routes).
+    - NÃO escreva SQL manualmente. Use os métodos do cliente Supabase (`.from('documents').select()...`).
+    - A segurança a nível de linha (Row Level Security - RLS) DEVE ser ativada e configurada diretamente no dashboard da Supabase. As queries devem contar com a RLS para garantir que um usuário só possa acessar seus próprios dados.
+    - NÃO implemente nenhuma lógica de JWT ou autenticação customizada. Use `supabase.auth.signInWithPassword()`, `supabase.auth.signOut()`, `supabase.auth.getUser()`, etc.
+
+3.  **Estilização com Tailwind v3.4 e shadcn/ui:**
+    - Siga estritamente as classes e diretivas do Tailwind CSS v3.4.
+    - Para novos componentes de UI (botões, inputs, cards), sempre comece usando o `shadcn/ui` através de seu CLI (`npx shadcn-ui@latest add ...`).
+    - Componentes devem ser autocontidos e estilizados com classes do Tailwind, não com CSS externo ou CSS-in-JS.
+
+4.  **Lógica Server-Side em Server Actions e Route Handlers:**
+    - Dê preferência ao uso de **Server Actions** para mutações de dados (envio de formulários). É a forma mais moderna e integrada de interagir com o servidor a partir de componentes React.
+    - Use **Route Handlers** (`app/api/...`) principalmente para webhooks (como o do Stripe/Resend) ou quando precisar de um endpoint de API REST tradicional.
+
+5.  **Tipagem Estrita com TypeScript:**
+    - Tudo deve ser tipado. Use tipos gerados pela Supabase CLI (`npx supabase gen types typescript > lib/database.types.ts`) para garantir a segurança de tipo entre o banco de dados e o código.
+    - Evite o uso de `any` a todo custo. Defina interfaces e tipos claros em `lib/types.ts` ou localmente no componente quando apropriado.
+
+6.  **Gerenciamento de Estado:**
+    - Para o estado global de autenticação, use a biblioteca `@supabase/auth-helpers-nextjs` que se integra com o Context do React.
+    - Para outros estados globais, comece com o `React Context API`. Evite bibliotecas mais complexas como Redux ou Zustand até que seja absolutamente necessário.
+    - Para estado local de formulários, use `react-hook-form`.
+
+## @prompt_examples
+
+### Exemplo de um prompt ruim (NÃO FAÇA ASSIM):
+"Adiciona a funcionalidade de deletar um documento."
+
+### Exemplo de um prompt bom (FAÇA ASSIM):
+"Preciso implementar a funcionalidade para deletar um documento. Por favor, quebre em tarefas e implemente."
+**Resposta esperada do AI:**
+"Ok. Para implementar a exclusão de documentos, farei o seguinte:
+`[ ]` Adicionar um botão 'Deletar' no componente do documento.
+`[ ]` Criar um modal de confirmação (usando o componente `AlertDialog` do shadcn/ui) que é acionado pelo botão.
+`[ ]` Criar uma Server Action `deleteDocument(documentId: string)`.
+`[ ]` Na Server Action, chamar `supabase.from('documents').delete().match({ id: documentId })`. A RLS garantirá que o usuário só pode deletar seus próprios documentos.
+`[ ]` Chamar a Server Action a partir do modal de confirmação.
+`[ ]` Usar a função `revalidatePath('/dashboard/documents')` do Next.js para atualizar a lista de documentos na UI após a exclusão.
+`[ ]` Adicionar uma notificação de sucesso.
+
+NÃO PEÇA NENHUMA CONFIRMAÇÃO, APENAS CRIE A TO-DO E PROSSIGA AUTOMATICAMENTE, NÃO PARE NO MEIO DAS FEATURES, NÃO FAÇA EU PEDIR DE NOVO OU PEDIR PARA CONTINUAR NO MEIO DE UMA FEATURE## @project
+- **Nome do Projeto:** Pacto Seguro
+- **Missão:** Evoluir a assinatura digital de um simples "ato de assinar" para uma "prova de entendimento". Somos uma plataforma SaaS que permite a criação de termos de consentimento interativos, garantindo que os signatários compreendam o que estão assinando.
+- **Diferencial:** Foco em módulos de compreensão (quizzes, inicialização de cláusulas), versionamento de termos ("Termo Vivo") e trilhas de auditoria robustas que registram a interação do usuário com o documento.
+
+## @stack
+A stack tecnológica foi escolhida para máxima produtividade, escalabilidade e simplicidade.
+
+**AVISO IMPORTANTE:** Nós substituímos a stack anterior de PostgreSQL/Prisma/Passport.js pela stack integrada da **Supabase**. TODA a lógica de autenticação, banco de dados e armazenamento de arquivos DEVE utilizar a Supabase.
+
+- **Framework Frontend:** Next.js 14+ (usando **App Router** exclusivamente).
+- **Linguagem:** TypeScript.
+- **Backend-as-a-Service (BaaS):**
+    - **Autenticação:** Supabase Auth (Login com e-mail/senha, logins sociais, etc.).
+    - **Banco de Dados:** Supabase Database (Postgres). A interação com o DB deve ser feita via `@supabase/supabase-js`.
+    - **Armazenamento:** Supabase Storage (para guardar os PDFs assinados e assinaturas).
+- **Estilização:**
+    - **Tailwind CSS v3.4:** Esta é a única versão autorizada. Não use classes ou funcionalidades de versões posteriores. A configuração em `tailwind.config.js` é a fonte da verdade.
+    - **Componentes UI:** `shadcn/ui`. Usado como base para nossos componentes, customizados para a identidade visual do Pacto Seguro.
+- **Envio de E-mails Transacionais:** Resend.
+- **Deployment:** Vercel.
+
+## @structure
+O projeto segue uma estrutura simplificada dentro de um único diretório de aplicação Next.js, aproveitando ao máximo o App Router e as capacidades server-side do framework.
+
+Excelente. Adoção de Cursor como ferramenta e a mudança para Supabase são decisões que otimizam drasticamente a velocidade e a simplicidade do desenvolvimento, perfeitas para um micro-SaaS.
+
+Aqui está um arquivo .cursor-rules completo e detalhado para o projeto Pacto Seguro, incorporando todas as suas especificações. Você pode salvar este conteúdo em um arquivo chamado .cursor-rules na raiz do seu projeto.
+
+# .cursor-rules for Pacto Seguro
+
+## @project
+- **Nome do Projeto:** Pacto Seguro
+- **Missão:** Evoluir a assinatura digital de um simples "ato de assinar" para uma "prova de entendimento". Somos uma plataforma SaaS que permite a criação de termos de consentimento interativos, garantindo que os signatários compreendam o que estão assinando.
+- **Diferencial:** Foco em módulos de compreensão (quizzes, inicialização de cláusulas), versionamento de termos ("Termo Vivo") e trilhas de auditoria robustas que registram a interação do usuário com o documento.
+
+## @stack
+A stack tecnológica foi escolhida para máxima produtividade, escalabilidade e simplicidade.
+
+**AVISO IMPORTANTE:** Nós substituímos a stack anterior de PostgreSQL/Prisma/Passport.js pela stack integrada da **Supabase**. TODA a lógica de autenticação, banco de dados e armazenamento de arquivos DEVE utilizar a Supabase.
+
+- **Framework Frontend:** Next.js 14+ (usando **App Router** exclusivamente).
+- **Linguagem:** TypeScript.
+- **Backend-as-a-Service (BaaS):**
+    - **Autenticação:** Supabase Auth (Login com e-mail/senha, logins sociais, etc.).
+    - **Banco de Dados:** Supabase Database (Postgres). A interação com o DB deve ser feita via `@supabase/supabase-js`.
+    - **Armazenamento:** Supabase Storage (para guardar os PDFs assinados e assinaturas).
+- **Estilização:**
+    - **Tailwind CSS v3.4:** Esta é a única versão autorizada. Não use classes ou funcionalidades de versões posteriores. A configuração em `tailwind.config.js` é a fonte da verdade.
+    - **Componentes UI:** `shadcn/ui`. Usado como base para nossos componentes, customizados para a identidade visual do Pacto Seguro.
+- **Envio de E-mails Transacionais:** Resend.
+- **Deployment:** Vercel.
+
+## @structure
+O projeto segue uma estrutura simplificada dentro de um único diretório de aplicação Next.js, aproveitando ao máximo o App Router e as capacidades server-side do framework.
+
+/pacto-seguro/
+├── app/                      # Diretório principal do App Router
+│   ├── (auth)/               # Grupo de rotas para autenticação (não afeta a URL)
+│   │   ├── login/
+│   │   └── callback/         # Callback para logins sociais da Supabase
+│   ├── (dashboard)/          # Grupo de rotas protegidas
+│   │   ├── documents/
+│   │   │   ├── [id]/         # Página do editor de um documento específico
+│   │   │   └── page.tsx      # Lista de documentos
+│   │   ├── settings/
+│   │   └── layout.tsx        # Layout do dashboard que verifica a sessão do usuário
+│   ├── api/                  # API Routes (para webhooks, etc.)
+│   │   └── payments/
+│   │       └── webhook/
+│   ├── sign/                 # Página pública de assinatura
+│   │   └── [token]/
+│   └── layout.tsx            # Layout raiz
+│   └── page.tsx              # Landing Page pública
+├── components/
+│   ├── ui/                   # Componentes base vindos do shadcn/ui (Button, Input, etc.)
+│   └── specific/             # Componentes complexos e específicos da aplicação
+│       ├── DocumentEditor.tsx
+│       ├── PricingTiers.tsx
+│       └── UserNav.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts         # Cliente Supabase para o lado do cliente (browser)
+│   │   └── server.ts         # Cliente Supabase para o lado do servidor (Server Components, Route Handlers)
+│   ├── utils.ts              # Funções utilitárias gerais
+│   └── types.ts              # Definições de tipos globais
+├── public/                   # Arquivos estáticos
+├── styles/
+│   └── globals.css           # Estilos globais e diretivas do Tailwind
+├── .cursor-rules             # ESTE ARQUIVO
+├── tailwind.config.js        # Configuração do Tailwind (v3.4)
+└── tsconfig.json
+
+Excelente. Adoção de Cursor como ferramenta e a mudança para Supabase são decisões que otimizam drasticamente a velocidade e a simplicidade do desenvolvimento, perfeitas para um micro-SaaS.
+
+Aqui está um arquivo .cursor-rules completo e detalhado para o projeto Pacto Seguro, incorporando todas as suas especificações. Você pode salvar este conteúdo em um arquivo chamado .cursor-rules na raiz do seu projeto.
+
+# .cursor-rules for Pacto Seguro
+
+## @project
+- **Nome do Projeto:** Pacto Seguro
+- **Missão:** Evoluir a assinatura digital de um simples "ato de assinar" para uma "prova de entendimento". Somos uma plataforma SaaS que permite a criação de termos de consentimento interativos, garantindo que os signatários compreendam o que estão assinando.
+- **Diferencial:** Foco em módulos de compreensão (quizzes, inicialização de cláusulas), versionamento de termos ("Termo Vivo") e trilhas de auditoria robustas que registram a interação do usuário com o documento.
+
+## @stack
+A stack tecnológica foi escolhida para máxima produtividade, escalabilidade e simplicidade.
+
+**AVISO IMPORTANTE:** Nós substituímos a stack anterior de PostgreSQL/Prisma/Passport.js pela stack integrada da **Supabase**. TODA a lógica de autenticação, banco de dados e armazenamento de arquivos DEVE utilizar a Supabase.
+
+- **Framework Frontend:** Next.js 14+ (usando **App Router** exclusivamente).
+- **Linguagem:** TypeScript.
+- **Backend-as-a-Service (BaaS):**
+    - **Autenticação:** Supabase Auth (Login com e-mail/senha, logins sociais, etc.).
+    - **Banco de Dados:** Supabase Database (Postgres). A interação com o DB deve ser feita via `@supabase/supabase-js`.
+    - **Armazenamento:** Supabase Storage (para guardar os PDFs assinados e assinaturas).
+- **Estilização:**
+    - **Tailwind CSS v3.4:** Esta é a única versão autorizada. Não use classes ou funcionalidades de versões posteriores. A configuração em `tailwind.config.js` é a fonte da verdade.
+    - **Componentes UI:** `shadcn/ui`. Usado como base para nossos componentes, customizados para a identidade visual do Pacto Seguro.
+- **Envio de E-mails Transacionais:** Resend.
+- **Deployment:** Vercel.
+
+## @structure
+O projeto segue uma estrutura simplificada dentro de um único diretório de aplicação Next.js, aproveitando ao máximo o App Router e as capacidades server-side do framework.
+
+/pacto-seguro/
+├── app/                      # Diretório principal do App Router
+│   ├── (auth)/               # Grupo de rotas para autenticação (não afeta a URL)
+│   │   ├── login/
+│   │   └── callback/         # Callback para logins sociais da Supabase
+│   ├── (dashboard)/          # Grupo de rotas protegidas
+│   │   ├── documents/
+│   │   │   ├── [id]/         # Página do editor de um documento específico
+│   │   │   └── page.tsx      # Lista de documentos
+│   │   ├── settings/
+│   │   └── layout.tsx        # Layout do dashboard que verifica a sessão do usuário
+│   ├── api/                  # API Routes (para webhooks, etc.)
+│   │   └── payments/
+│   │       └── webhook/
+│   ├── sign/                 # Página pública de assinatura
+│   │   └── [token]/
+│   └── layout.tsx            # Layout raiz
+│   └── page.tsx              # Landing Page pública
+├── components/
+│   ├── ui/                   # Componentes base vindos do shadcn/ui (Button, Input, etc.)
+│   └── specific/             # Componentes complexos e específicos da aplicação
+│       ├── DocumentEditor.tsx
+│       ├── PricingTiers.tsx
+│       └── UserNav.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts         # Cliente Supabase para o lado do cliente (browser)
+│   │   └── server.ts         # Cliente Supabase para o lado do servidor (Server Components, Route Handlers)
+│   ├── utils.ts              # Funções utilitárias gerais
+│   └── types.ts              # Definições de tipos globais
+├── public/                   # Arquivos estáticos
+├── styles/
+│   └── globals.css           # Estilos globais e diretivas do Tailwind
+├── .cursor-rules             # ESTE ARQUIVO
+├── tailwind.config.js        # Configuração do Tailwind (v3.4)
+└── tsconfig.json
+
+
+## @rules
+Estas são as regras fundamentais que o Cursor AI deve seguir ao gerar ou editar código para este projeto.
+
+NÃO PEÇA NENHUMA CONFIRMAÇÃO, APENAS CRIE A TO-DO E PROSSIGA AUTOMATICAMENTE, NÃO PARE NO MEIO DAS FEATURES, NÃO FAÇA EU PEDIR DE NOVO OU PEDIR PARA CONTINUAR NO MEIO DE UMA FEATURE
+
+1.  **Metodologia "To-Do List" é Mandatória:**
+    - TODA nova feature, componente ou modificação solicitada por prompt DEVE ser primeiramente quebrada em uma lista de tarefas (to-do list) com checkboxes.
+    - Exemplo de interação:
+      - **Usuário:** "Crie a página de configurações do perfil."
+      - **Cursor AI:** "Entendido. Para criar a página de configurações do perfil, seguirei estes passos:
+        `[ ]` Criar a estrutura da rota em `app/(dashboard)/settings/page.tsx`.
+        `[ ]` Buscar os dados do usuário logado usando o cliente Supabase do lado do servidor.
+        `[ ]` Criar um formulário para atualizar o nome e o avatar do usuário.
+        `[ ]` Implementar a lógica de `Server Action` para receber os dados do formulário.
+        `[ ]` Chamar a função `supabase.auth.updateUser()` com os novos dados.
+        `[ ]` Adicionar uma notificação (toast) de sucesso ou erro.
+
+2.  **Supabase é a ÚNICA Fonte da Verdade para Dados e Auth:**
+    - Use o cliente JavaScript `@supabase/supabase-js`. Importe a instância correta de `/lib/supabase/client.ts` (para componentes de cliente) ou `/lib/supabase/server.ts` (para componentes de servidor e API routes).
+    - NÃO escreva SQL manualmente. Use os métodos do cliente Supabase (`.from('documents').select()...`).
+    - A segurança a nível de linha (Row Level Security - RLS) DEVE ser ativada e configurada diretamente no dashboard da Supabase. As queries devem contar com a RLS para garantir que um usuário só possa acessar seus próprios dados.
+    - NÃO implemente nenhuma lógica de JWT ou autenticação customizada. Use `supabase.auth.signInWithPassword()`, `supabase.auth.signOut()`, `supabase.auth.getUser()`, etc.
+
+3.  **Estilização com Tailwind v3.4 e shadcn/ui:**
+    - Siga estritamente as classes e diretivas do Tailwind CSS v3.4.
+    - Para novos componentes de UI (botões, inputs, cards), sempre comece usando o `shadcn/ui` através de seu CLI (`npx shadcn-ui@latest add ...`).
+    - Componentes devem ser autocontidos e estilizados com classes do Tailwind, não com CSS externo ou CSS-in-JS.
+
+4.  **Lógica Server-Side em Server Actions e Route Handlers:**
+    - Dê preferência ao uso de **Server Actions** para mutações de dados (envio de formulários). É a forma mais moderna e integrada de interagir com o servidor a partir de componentes React.
+    - Use **Route Handlers** (`app/api/...`) principalmente para webhooks (como o do Stripe/Resend) ou quando precisar de um endpoint de API REST tradicional.
+
+5.  **Tipagem Estrita com TypeScript:**
+    - Tudo deve ser tipado. Use tipos gerados pela Supabase CLI (`npx supabase gen types typescript > lib/database.types.ts`) para garantir a segurança de tipo entre o banco de dados e o código.
+    - Evite o uso de `any` a todo custo. Defina interfaces e tipos claros em `lib/types.ts` ou localmente no componente quando apropriado.
+
+6.  **Gerenciamento de Estado:**
+    - Para o estado global de autenticação, use a biblioteca `@supabase/auth-helpers-nextjs` que se integra com o Context do React.
+    - Para outros estados globais, comece com o `React Context API`. Evite bibliotecas mais complexas como Redux ou Zustand até que seja absolutamente necessário.
+    - Para estado local de formulários, use `react-hook-form`.
+
+## @prompt_examples
+
+### Exemplo de um prompt ruim (NÃO FAÇA ASSIM):
+"Adiciona a funcionalidade de deletar um documento."
+
+### Exemplo de um prompt bom (FAÇA ASSIM):
+"Preciso implementar a funcionalidade para deletar um documento. Por favor, quebre em tarefas e implemente."
+**Resposta esperada do AI:**
+"Ok. Para implementar a exclusão de documentos, farei o seguinte:
+`[ ]` Adicionar um botão 'Deletar' no componente do documento.
+`[ ]` Criar um modal de confirmação (usando o componente `AlertDialog` do shadcn/ui) que é acionado pelo botão.
+`[ ]` Criar uma Server Action `deleteDocument(documentId: string)`.
+`[ ]` Na Server Action, chamar `supabase.from('documents').delete().match({ id: documentId })`. A RLS garantirá que o usuário só pode deletar seus próprios documentos.
+`[ ]` Chamar a Server Action a partir do modal de confirmação.
+`[ ]` Usar a função `revalidatePath('/dashboard/documents')` do Next.js para atualizar a lista de documentos na UI após a exclusão.
+`[ ]` Adicionar uma notificação de sucesso.
+
+NÃO PEÇA NENHUMA CONFIRMAÇÃO, APENAS CRIE A TO-DO E PROSSIGA AUTOMATICAMENTE, NÃO PARE NO MEIO DAS FEATURES, NÃO FAÇA EU PEDIR DE NOVO OU PEDIR PARA CONTINUAR NO MEIO DE UMA FEATURE
