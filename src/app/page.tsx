@@ -1,7 +1,9 @@
 export default function Home() {
   return (
     <main>
-      <h1>Bem-vindo ao Pacto Seguro</h1>
+      <h1 className="text-4xl font-bold text-center text-blue-600 mt-10">
+  Bem-vindo ao Pacto Seguro
+</h1>
     </main>
   );
 }
