@@ -1,9 +1,11 @@
 import React from 'react'
 import { createClient } from '../../../lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { UserNav } from '@/components/specific/UserNav'
-import { SidebarNav } from '@/components/specific/SidebarNav'
-import Link from 'next/link'
+import { AppSidebar } from '@/components/specific/AppSidebar'
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { Menu } from 'lucide-react'
+import { Toaster } from "@/components/ui/toaster"
+
 
 export default async function DashboardLayout({
   children,
@@ -20,26 +22,26 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  const userData = {
+    name: user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário',
+    email: user.email || '',
+    avatarUrl: user.user_metadata?.avatar_url || null,
+  }
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b bg-background">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <Link href="/dashboard/documents" className="text-2xl font-bold">
-            Pacto Seguro
-          </Link>
-          <UserNav />
-        </div>
-      </header>
-      <div className="container flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
-        <aside className="fixed top-16 z-30 -ml-2 hidden h-[calc(100vh-4rem)] w-full shrink-0 md:sticky md:block">
-          <div className="h-full py-6 pl-8 pr-6 lg:py-8">
-            <SidebarNav />
+    <SidebarProvider>
+      <div className="md:grid md:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)]">
+        <AppSidebar user={userData} />
+        <main>
+          <div className="md:hidden flex items-center justify-end p-4">
+            <SidebarTrigger>
+              <Menu />
+            </SidebarTrigger>
           </div>
-        </aside>
-        <main className="flex w-full flex-col overflow-hidden py-6 lg:py-8">
-          {children}
+          <div className="p-4 sm:p-6 md:p-8">{children}</div>
         </main>
       </div>
-    </div>
+      <Toaster />
+    </SidebarProvider>
   )
 }
