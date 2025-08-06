@@ -2,15 +2,11 @@ import { createClient } from '../../../../../lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { DocumentEditForm } from './_components/DocumentEditForm'
 
-interface DocumentEditPageProps {
-  params: {
-    id: string
-  }
-}
-
 export default async function DocumentEditPage({
   params,
-}: DocumentEditPageProps) {
+}: {
+  params: { id: string }
+}) {
   const supabase = createClient()
 
   const {
