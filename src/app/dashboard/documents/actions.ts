@@ -51,3 +51,68 @@ export async function deleteDocument(prevState: any, formData: FormData) {
 
   return { success: true }
 }
+
+export async function getTemplates() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Usuário não autenticado.' }
+  }
+
+  const { data: templates, error } = await supabase
+    .from('templates')
+    .select('id, title')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Erro ao buscar templates:', error)
+    return { error: error.message }
+  }
+
+  return { templates }
+}
+
+export async function createDocumentFromTemplate(templateId: string) {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return redirect('/login')
+  }
+
+  // 1. Buscar o template
+  const { data: template, error: templateError } = await supabase
+    .from('templates')
+    .select('title, content')
+    .eq('id', templateId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (templateError || !template) {
+    console.error('Erro ao buscar template:', templateError)
+    // TODO: Adicionar toast de erro
+    return
+  }
+
+  // 2. Criar novo documento com os dados do template
+  const { data: document, error: documentError } = await supabase
+    .from('documents')
+    .insert({
+      user_id: user.id,
+      title: `${template.title} (Cópia)`,
+      content: template.content,
+    })
+    .select('id')
+    .single()
+  
+  if (documentError) {
+    console.error('Erro ao criar documento a partir do template:', documentError)
+    // TODO: Adicionar toast de erro
+    return
+  }
+
+  revalidatePath('/dashboard/documents')
+  redirect(`/dashboard/documents/${document.id}`)
+}

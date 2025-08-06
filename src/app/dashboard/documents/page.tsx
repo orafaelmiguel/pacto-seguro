@@ -1,9 +1,8 @@
 import { Suspense } from 'react'
 import { createClient } from '../../../../lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { DocumentCard } from '@/components/specific/DocumentCard'
-import { createDocument } from './actions'
+import { NewDocumentDialog } from './_components/NewDocumentDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { File } from 'lucide-react'
 
@@ -12,9 +11,7 @@ export default function DocumentsPage() {
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Meus Documentos</h1>
-        <form action={createDocument}>
-          <Button>Novo Documento</Button>
-        </form>
+        <NewDocumentDialog />
       </header>
       <Suspense fallback={<DocumentsGridSkeleton />}>
         <DocumentsList />
@@ -40,7 +37,6 @@ async function DocumentsList() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    // TODO: Add a proper error component
     return <p className="text-destructive">Erro ao carregar documentos.</p>
   }
 
@@ -54,9 +50,9 @@ async function DocumentsList() {
         <p className="mt-2 text-sm text-muted-foreground">
           Crie seu primeiro documento para começar a gerenciar seus termos.
         </p>
-        <form action={createDocument} className="mt-6">
-          <Button>Criar Novo Documento</Button>
-        </form>
+        <div className="mt-6">
+          <NewDocumentDialog />
+        </div>
       </div>
     )
   }
@@ -68,7 +64,7 @@ async function DocumentsList() {
           key={doc.id}
           id={doc.id}
           title={doc.title}
-          status={doc.status as any} // Cast because Supabase gen types might not be perfect
+          status={doc.status as any}
           createdAt={doc.created_at}
         />
       ))}
