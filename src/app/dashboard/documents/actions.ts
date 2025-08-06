@@ -34,3 +34,20 @@ export async function createDocument() {
   revalidatePath('/dashboard/documents')
   redirect(`/dashboard/documents/${document.id}`)
 }
+
+export async function deleteDocument(prevState: any, formData: FormData) {
+  const supabase = createClient()
+  const documentId = formData.get('documentId') as string
+
+  const { error } = await supabase.from('documents').delete().eq('id', documentId)
+
+  if (error) {
+    console.error('Erro ao deletar documento:', error)
+    // TODO: Adicionar um toast de erro aqui
+    return { error: error.message }
+  }
+
+  revalidatePath('/dashboard/documents')
+
+  return { success: true }
+}
