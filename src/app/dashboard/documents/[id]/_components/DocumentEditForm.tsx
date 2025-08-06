@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { SaveStatus } from '@/components/specific/SaveStatus'
 import { ChevronLeft, Loader2 } from 'lucide-react'
+import { SendDocumentDialog } from './SendDocumentDialog'
 import { updateDocumentTitle, updateDocumentContent, saveAsTemplate } from '../actions'
 import { cn } from '@/lib/utils'
 import debounce from 'lodash.debounce'
@@ -187,6 +188,7 @@ export function DocumentEditForm({ document }: { document: DocumentData }) {
               Salvar
             </Button>
             <SaveAsTemplateDialog content={content} />
+            <SendDocumentDialog documentId={document.id} />
           </div>
         </div>
       </div>
