@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator' // Assuming you have Separ
 
 interface DocumentEditorProps {
   initialContent: any | null
-  onContentChange: (content: any) => void
+  onUpdate: (content: any) => void
 }
 
 const Toolbar = ({ editor }: { editor: Editor | null }) => {
@@ -92,7 +92,7 @@ const Toolbar = ({ editor }: { editor: Editor | null }) => {
 
 export function DocumentEditor({
   initialContent,
-  onContentChange,
+  onUpdate,
 }: DocumentEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
@@ -105,7 +105,7 @@ export function DocumentEditor({
       },
     },
     onUpdate: ({ editor }) => {
-      onContentChange(editor.getJSON())
+      onUpdate(editor.getJSON())
     },
   })
 

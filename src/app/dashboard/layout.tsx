@@ -38,7 +38,11 @@ export default async function DashboardLayout({
               <Menu />
             </SidebarTrigger>
           </div>
-          <div className="p-4 sm:p-6 md:p-8">{children}</div>
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="max-w-screen-xl mx-auto">
+              {children}
+            </div>
+          </div>
         </main>
       </div>
       <Toaster />
