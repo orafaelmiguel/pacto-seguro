@@ -5,6 +5,7 @@ import { DocumentCard } from '@/components/specific/DocumentCard'
 import { NewDocumentDialog } from './_components/NewDocumentDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { File } from 'lucide-react'
+import { FilterControls } from './_components/FilterControls'
 
 type Recipient = {
   id: string
@@ -21,21 +22,38 @@ interface DocumentWithDetails {
   recipients: Recipient[] | null
 }
 
-export default function DocumentsPage() {
+export default function DocumentsPage({
+  searchParams,
+}: {
+  searchParams?: {
+    q?: string
+    status?: 'draft' | 'sent' | 'completed'
+  }
+}) {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Meus Documentos</h1>
         <NewDocumentDialog />
       </header>
+      
+      <FilterControls />
+
       <Suspense fallback={<DocumentsGridSkeleton />}>
-        <DocumentsList />
+        <DocumentsList searchParams={searchParams} />
       </Suspense>
     </div>
   )
 }
 
-async function DocumentsList() {
+async function DocumentsList({
+  searchParams,
+}: {
+  searchParams?: {
+    q?: string
+    status?: 'draft' | 'sent' | 'completed'
+  }
+}) {
   const supabase = createClient()
   const {
     data: { user },
@@ -45,11 +63,19 @@ async function DocumentsList() {
     return redirect('/login')
   }
 
+  const status = searchParams?.status
+  const query = searchParams?.q
+
   const { data: documents, error } = await supabase.rpc(
-    'get_documents_with_details'
+    'get_documents_with_details',
+    {
+      status_filter: status === 'all' ? null : status,
+      search_query: query || null,
+    }
   )
 
   if (error) {
+    console.error(error)
     return <p className="text-destructive">Erro ao carregar documentos.</p>
   }
 
@@ -61,7 +87,9 @@ async function DocumentsList() {
           Nenhum documento encontrado
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Crie seu primeiro documento para começar a gerenciar seus termos.
+          {status || query 
+            ? "Tente ajustar seus filtros ou busca."
+            : "Crie seu primeiro documento para começar."}
         </p>
         <div className="mt-6">
           <NewDocumentDialog />
