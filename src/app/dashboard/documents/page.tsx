@@ -6,6 +6,21 @@ import { NewDocumentDialog } from './_components/NewDocumentDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { File } from 'lucide-react'
 
+type Recipient = {
+  id: string
+  name: string
+  email: string
+  status: 'pending' | 'viewed' | 'signed'
+}
+
+interface DocumentWithDetails {
+  document_id: string
+  title: string
+  status: 'draft' | 'sent' | 'completed'
+  created_at: string
+  recipients: Recipient[] | null
+}
+
 export default function DocumentsPage() {
   return (
     <div className="space-y-6">
@@ -57,14 +72,14 @@ async function DocumentsList() {
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {documents.map((doc) => (
+      {(documents as DocumentWithDetails[]).map((doc) => (
         <DocumentCard
           key={doc.document_id}
           id={doc.document_id}
           title={doc.title}
-          status={doc.status as any}
+          status={doc.status}
           createdAt={doc.created_at}
-          recipients={doc.recipients}
+          recipients={doc.recipients || undefined}
         />
       ))}
     </div>
