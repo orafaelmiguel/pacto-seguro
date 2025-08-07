@@ -74,7 +74,15 @@ export async function submitSignature(payload: SubmitSignaturePayload) {
     return { success: false, message: 'Não foi possível obter a URL da assinatura.' };
   }
 
-  const contentHtml = generateHTML(recipient.document.content, extensions);
+  // Garante que o conteúdo do documento seja um JSON válido para o TipTap
+  const documentContent =
+    recipient.document.content &&
+    typeof recipient.document.content === 'object' &&
+    (recipient.document.content as any).type === 'doc'
+      ? recipient.document.content
+      : { type: 'doc', content: [] } // Padrão de documento vazio
+
+  const contentHtml = generateHTML(documentContent, extensions) || '&nbsp;';
 
   const pdfResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-pdf`, {
     method: 'POST',
@@ -227,3 +235,43 @@ export async function submitSignature(payload: SubmitSignaturePayload) {
   
   redirect('/thank-you');
 }
+
+export async function markRecipientAsViewed(token: string) {
+  try {
+    const supabase = createServerClient()
+    const { data: recipient, error } = await supabase
+      .from('recipients')
+      .select('id, status')
+      .eq('access_token', token)
+      .single()
+
+    if (error || !recipient) {
+      console.log(`[ViewAction] Destinatário não encontrado para o token: ${token}`, error)
+      return { success: false, message: 'Destinatário não encontrado.' }
+    }
+
+    // Só atualiza se o status atual for 'pendente'
+    if (recipient.status === 'pending') {
+      const { error: updateError } = await supabase
+        .from('recipients')
+        .update({ status: 'viewed' })
+        .eq('id', recipient.id)
+
+      if (updateError) {
+        console.error(`[ViewAction] Erro ao atualizar status para 'viewed' para o recipient ${recipient.id}:`, updateError)
+        return { success: false, message: 'Erro ao marcar como visualizado.' }
+      }
+      
+      console.log(`[ViewAction] Destinatário ${recipient.id} marcado como 'visualizado'.`)
+      revalidatePath('/dashboard/documents') // Invalida o cache do dashboard
+      return { success: true }
+    }
+    
+    console.log(`[ViewAction] Status do destinatário ${recipient.id} já é '${recipient.status}', nenhuma ação tomada.`)
+    return { success: true, message: 'Status já atualizado.' }
+  } catch (e) {
+    console.error('[ViewAction] Erro inesperado:', e)
+    return { success: false, message: 'Ocorreu um erro inesperado.' }
+  }
+}
+

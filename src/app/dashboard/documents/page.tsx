@@ -30,11 +30,9 @@ async function DocumentsList() {
     return redirect('/login')
   }
 
-  const { data: documents, error } = await supabase
-    .from('documents')
-    .select('id, title, status, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  const { data: documents, error } = await supabase.rpc(
+    'get_documents_with_details'
+  )
 
   if (error) {
     return <p className="text-destructive">Erro ao carregar documentos.</p>
@@ -61,11 +59,12 @@ async function DocumentsList() {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {documents.map((doc) => (
         <DocumentCard
-          key={doc.id}
-          id={doc.id}
+          key={doc.document_id}
+          id={doc.document_id}
           title={doc.title}
           status={doc.status as any}
           createdAt={doc.created_at}
+          recipients={doc.recipients}
         />
       ))}
     </div>

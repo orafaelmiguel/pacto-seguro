@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { generateHTML } from '@tiptap/html/server'
 import StarterKit from '@tiptap/starter-kit'
 import { SignForm } from './_components/SignForm'
+import { markRecipientAsViewed } from './actions'
 
 // Tipagem para os dados que esperamos da Edge Function
 interface DocumentData {
@@ -42,8 +43,25 @@ export default async function SignPage({ params }: SignPageProps) {
     notFound()
   }
 
+  // Marcar como visualizado (não precisamos esperar a conclusão)
+  markRecipientAsViewed(token);
+
   // 3. Gerar o HTML a partir do conteúdo JSON do TipTap
-  const contentHtml = generateHTML(data.document.content, extensions)
+  let documentContent = null
+  if (data.document.content) {
+    documentContent =
+      typeof data.document.content === 'string'
+        ? JSON.parse(data.document.content)
+        : data.document.content
+  }
+
+  // Garante que um conteúdo válido (mesmo que vazio) seja passado para generateHTML
+  const validContent =
+    documentContent && documentContent.type === 'doc'
+      ? documentContent
+      : { type: 'doc', content: [] } // Padrão de documento vazio do TipTap
+
+  const contentHtml = generateHTML(validContent, extensions)
 
   // 4. Renderiza o formulário do lado do cliente, passando os dados
   return (
