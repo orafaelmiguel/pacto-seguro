@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache'
 import { Resend } from 'resend'
 import SignatureInvitationEmail from '@/components/emails/SignatureInvitationEmail'
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 export async function updateDocumentTitle(documentId: string, newTitle: string) {
@@ -80,6 +79,7 @@ export async function sendDocumentForSignature(
   documentId: string,
   recipients: RecipientData[],
 ) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const supabase = createClient()
   const {
     data: { user },
