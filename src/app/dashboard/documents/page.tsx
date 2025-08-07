@@ -27,7 +27,7 @@ export default function DocumentsPage({
 }: {
   searchParams?: {
     q?: string
-    status?: 'draft' | 'sent' | 'completed'
+    status?: 'draft' | 'sent' | 'completed' | 'all'
   }
 }) {
   return (
@@ -51,7 +51,7 @@ async function DocumentsList({
 }: {
   searchParams?: {
     q?: string
-    status?: 'draft' | 'sent' | 'completed'
+    status?: 'draft' | 'sent' | 'completed' | 'all'
   }
 }) {
   const supabase = createClient()
