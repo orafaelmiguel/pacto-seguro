@@ -11,7 +11,6 @@ import StarterKit from '@tiptap/starter-kit'
 import { FunctionsHttpError } from '@supabase/supabase-js'
 
 const extensions = [StarterKit]
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 interface SubmitSignaturePayload {
   token: string
@@ -20,6 +19,7 @@ interface SubmitSignaturePayload {
 }
 
 export async function submitSignature(payload: SubmitSignaturePayload) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   console.log('Server Action: Iniciando processo de assinatura para o token:', payload.token)
   
   // Cliente que age em nome do usuário (respeita RLS do DB)
