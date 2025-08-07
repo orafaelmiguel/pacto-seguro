@@ -1,3 +1,5 @@
 {
-  "imports": {}
+  "imports": {
+    "https://deno.land/x/puppeteer@19.7.2/mod.ts": "https://deno.land/x/puppeteer@19.7.2/mod.ts"
+  }
 }

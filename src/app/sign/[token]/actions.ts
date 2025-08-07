@@ -76,31 +76,30 @@ export async function submitSignature(payload: SubmitSignaturePayload) {
 
   const contentHtml = generateHTML(recipient.document.content, extensions);
 
-  const { data: pdfBuffer, error: pdfError } = await supabase.functions.invoke(
-    'generate-signed-pdf', 
-    {
-      body: {
-        documentTitle: recipient.document.title,
-        documentHtml: contentHtml,
-        signerName: payload.signerName,
-        signerEmail: recipient.email,
-        signatureUrl: signatureUrl,
-        documentId: recipient.document_id,
-        recipientId: recipient.id,
-      },
-      responseType: 'arraybuffer'
-    }
-  );
+  const pdfResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/generate-pdf`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      documentTitle: recipient.document.title,
+      documentHtml: contentHtml,
+      signerName: payload.signerName,
+      signerEmail: recipient.email,
+      signatureUrl: signatureUrl,
+      documentId: recipient.document_id,
+      recipientId: recipient.id,
+    }),
+  });
 
-  if (pdfError || !pdfBuffer) {
-    if (pdfError instanceof FunctionsHttpError) {
-      const errorBody = await pdfError.context.text();
-      console.error('Erro detalhado da Edge Function (generate-signed-pdf):', errorBody);
-    } else {
-       console.error('Erro ao gerar o PDF:', pdfError);
-    }
+  if (!pdfResponse.ok) {
+    const errorBody = await pdfResponse.json();
+    console.error('Erro detalhado da API Route (generate-pdf):', errorBody);
     return { success: false, message: 'Não foi possível gerar o documento final.' };
   }
+  
+  const pdfBlob = await pdfResponse.blob();
+  const pdfBuffer = await pdfBlob.arrayBuffer();
 
   const { data: uploadData, error: pdfUploadError } = await supabase.functions.invoke(
     'upload-signed-pdf',
@@ -162,47 +161,58 @@ export async function submitSignature(payload: SubmitSignaturePayload) {
   }
 
   try {
-    const { data: docInfo } = await supabase
+    // Etapa 1: Obter o user_id do criador a partir do documento
+    const { data: docData, error: docError } = await supabase
       .from('documents')
-      .select('title, user:users(email, user_metadata)')
+      .select('title, user_id')
       .eq('id', recipient.document_id)
       .single();
-
-    if (!docInfo || !docInfo.user) {
-      throw new Error('Não foi possível encontrar os dados do criador do documento.');
+      
+    if (docError || !docData?.user_id) {
+      console.error('Erro ao buscar documento ou user_id:', docError);
+      throw new Error('Não foi possível encontrar os dados do documento ou do criador.');
     }
 
-    const owner = docInfo.user;
+    // Etapa 2: Usar o cliente admin para buscar os dados do criador pelo ID
+    const { data: { user: owner }, error: ownerError } = await supabaseAdmin.auth.admin.getUserById(docData.user_id);
+
+    if (ownerError || !owner) {
+      console.error('Erro ao buscar criador do documento:', ownerError);
+      throw new Error('Não foi possível encontrar os dados do criador do documento.');
+    }
+    
+    // Etapa 3: Preparar dados e enviar e-mails
     const ownerName = owner.user_metadata?.full_name || owner.email;
+    const documentTitle = docData.title;
 
     await resend.emails.send({
       from: 'Pacto Seguro <onboarding@resend.dev>',
       to: recipient.email,
-      subject: `Documento Assinado: ${docInfo.title}`,
+      subject: `Documento Assinado: ${documentTitle}`,
       react: SignedDocumentEmail({
-        documentTitle: docInfo.title,
+        documentTitle: documentTitle,
         recipientName: payload.signerName,
         ownerName: ownerName,
         isOwner: false,
       }),
       attachments: [{
-        filename: `${docInfo.title.replace(/\s/g, '_')}_assinado.pdf`,
+        filename: `${documentTitle.replace(/\s/g, '_')}_assinado.pdf`,
         content: Buffer.from(pdfBuffer),
       }],
     });
 
     await resend.emails.send({
       from: 'Pacto Seguro <onboarding@resend.dev>',
-      to: owner.email,
-      subject: `Seu Documento Foi Assinado: ${docInfo.title}`,
+      to: owner.email!, // Email do criador
+      subject: `Seu Documento Foi Assinado: ${documentTitle}`,
       react: SignedDocumentEmail({
-        documentTitle: docInfo.title,
+        documentTitle: documentTitle,
         recipientName: payload.signerName,
         ownerName: ownerName,
         isOwner: true,
       }),
       attachments: [{
-        filename: `${docInfo.title.replace(/\s/g, '_')}_assinado.pdf`,
+        filename: `${documentTitle.replace(/\s/g, '_')}_assinado.pdf`,
         content: Buffer.from(pdfBuffer),
       }],
     });

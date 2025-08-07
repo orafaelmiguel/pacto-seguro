@@ -1,13 +1,7 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
-import puppeteer from "https://deno.land/x/puppeteer@19.7.2/mod.ts";
+// src/app/api/generate-pdf/route.ts
+import { NextResponse } from 'next/server';
 
-serve(async (req) => {
-  // Tratar requisição OPTIONS (pre-flight) para CORS
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
+export async function POST(request: Request) {
   try {
     const {
       documentTitle,
@@ -17,22 +11,22 @@ serve(async (req) => {
       signatureUrl,
       documentId,
       recipientId
-    } = await req.json();
+    } = await request.json();
+    
+    const BROWSERLESS_API_KEY = process.env.BROWSERLESS_API_KEY;
 
-    if (!documentHtml) {
-      throw new Error("O conteúdo HTML do documento é obrigatório.");
+    if (!BROWSERLESS_API_KEY) {
+      throw new Error("A variável de ambiente BROWSERLESS_API_KEY não foi definida.");
     }
-     if (!signatureUrl) {
-      throw new Error("A URL da assinatura é obrigatória.");
+     if (!documentHtml || !signatureUrl) {
+      throw new Error("HTML do documento e URL da assinatura são obrigatórios.");
     }
 
-    // Template HTML que será usado para gerar o PDF
     const finalHtml = `
       <!DOCTYPE html>
       <html lang="pt-BR">
       <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${documentTitle}</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
@@ -49,9 +43,7 @@ serve(async (req) => {
       <body>
         <div class="container">
           <h1>${documentTitle}</h1>
-          <div class="document-content">
-            ${documentHtml}
-          </div>
+          <div class="document-content">${documentHtml}</div>
           <div class="signature-section">
             <h3>Assinatura Eletrônica</h3>
             <div class="signature-box">
@@ -66,7 +58,7 @@ serve(async (req) => {
           <div class="audit-trail">
             <p><strong>Documento ID:</strong> ${documentId}</p>
             <p><strong>Destinatário ID:</strong> ${recipientId}</p>
-            <p><strong>IP do Signatário:</strong> ${req.headers.get("x-forwarded-for") ?? "Não disponível"}</p>
+            <p><strong>IP do Signatário:</strong> ${request.headers.get("x-forwarded-for") ?? "Não disponível"}</p>
           </div>
         </div>
         <div class="footer">
@@ -75,44 +67,41 @@ serve(async (req) => {
       </body>
       </html>
     `;
+    
+    const BROWSERLESS_URL = `https://production-sfo.browserless.io/pdf?token=${BROWSERLESS_API_KEY}`;
 
-    const BROWSERLESS_API_KEY = Deno.env.get("BROWSERLESS_API_KEY");
-    if (!BROWSERLESS_API_KEY) {
-      throw new Error("A variável de ambiente BROWSERLESS_API_KEY não foi definida para a função.");
-    }
-    const browserWSEndpoint = `wss://chrome.browserless.io?token=${BROWSERLESS_API_KEY}`;
-    
-    const browser = await puppeteer.connect({ browserWSEndpoint });
-    const page = await browser.newPage();
-    
-    // Define o conteúdo da página
-    await page.setContent(finalHtml, { waitUntil: 'networkidle0' });
-    
-    // Gera o PDF
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '20mm',
-        right: '20mm',
-        bottom: '20mm',
-        left: '20mm'
-      }
+    const pdfResponse = await fetch(BROWSERLESS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        html: finalHtml,
+        options: {
+          format: 'A4',
+          printBackground: true,
+          margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' }
+        }
+      })
     });
 
-    await browser.close();
+    if (!pdfResponse.ok) {
+        const errorText = await pdfResponse.text();
+        throw new Error(`Browserless API respondeu com status ${pdfResponse.status}: ${errorText}`);
+    }
 
-    // Retorna o buffer do PDF
+    const pdfBuffer = await pdfResponse.arrayBuffer();
+
     return new Response(pdfBuffer, {
-      headers: { ...corsHeaders, "Content-Type": "application/pdf" },
+      headers: { "Content-Type": "application/pdf" },
       status: 200,
     });
 
   } catch (error) {
-    console.error("Erro ao gerar PDF:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    console.error("Erro ao gerar PDF via API Route:", error);
+    return NextResponse.json(
+      { error: (error as Error).message }, 
+      { status: 500 }
+    );
   }
-});
+}
